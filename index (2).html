@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>변경관리 대시보드</title>
+<style>
+:root{--bg:#f4f6f9;--cd:#fff;--tx:#1c2331;--mu:#677084;--bd:#e1e5ec;--pr:#2f5fd0;--ok:#16a34a;--wa:#d97706;--er:#dc2626;--tr:#e3e7ee}
+@media(prefers-color-scheme:dark){:root{--bg:#12151c;--cd:#1b2029;--tx:#e8ebf2;--mu:#98a1b3;--bd:#2c3340;--pr:#6c92ff;--tr:#2c3340}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 -apple-system,"Malgun Gothic","Noto Sans KR",sans-serif}
+.w{max-width:1200px;margin:0 auto;padding:20px}
+h1{font-size:20px;margin:0}.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{border:1px solid var(--bd);background:var(--cd);padding:6px 12px;border-radius:8px;cursor:pointer}
+button.p{background:var(--pr);border-color:var(--pr);color:#fff}button.d{color:var(--er)}
+input,select,textarea{width:100%;padding:6px 8px;border:1px solid var(--bd);border-radius:6px;background:var(--cd)}
+textarea{min-height:56px;resize:vertical}
+.k{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
+.kc{background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:10px 14px;cursor:pointer}
+.kc.on{outline:2px solid var(--pr)}.kc b{display:block;font-size:22px}.kc span{color:var(--mu);font-size:12px}
+.tb{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}.tb input{max-width:260px}.tb select{width:auto}
+.it{background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer}
+.it:hover{border-color:var(--pr)}.hd{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.no{font-weight:700;color:var(--pr)}.ti{font-weight:600;margin-left:6px}.mt{color:var(--mu);font-size:12px;margin:2px 0 10px}
+.bg{display:inline-block;padding:1px 9px;border-radius:99px;font-size:12px;color:#fff;margin-left:6px}
+.st-접수{background:#8892a6}.st-진행중{background:var(--pr)}.st-지연{background:var(--er)}.st-완료{background:var(--ok)}
+.pg{display:flex;align-items:center;gap:12px}.stg{display:flex;gap:4px;flex:1}
+.sg{flex:1}.sg i{display:block;height:10px;background:var(--tr);border-radius:3px;overflow:hidden;position:relative}
+.sg i u{position:absolute;inset:0 auto 0 0;background:var(--ok)}.sg.cur i{outline:2px solid var(--pr)}
+.sg small{display:block;font-size:11px;color:var(--mu);text-align:center;margin-top:3px;line-height:1.2}.sg.cur small{color:var(--pr);font-weight:700}
+.pc{font-weight:700;font-size:18px;min-width:52px;text-align:right}
+.dd{font-size:12px}.dd.late{color:var(--er);font-weight:700}.dd.soon{color:var(--wa);font-weight:700}
+.ov{position:fixed;inset:0;background:#0008;display:none;overflow:auto;padding:20px;z-index:9}.ov.on{display:block}
+.md{background:var(--cd);max-width:900px;margin:0 auto;border-radius:14px;padding:20px}
+.g{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.g .f2{grid-column:span 2}.g .f3{grid-column:span 3}
+label{display:block;font-size:12px;color:var(--mu);margin-bottom:2px}
+h3{font-size:14px;margin:18px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}
+.sr{display:grid;grid-template-columns:28px 130px 130px 1fr;gap:8px;align-items:center;margin-bottom:6px}
+.sr input[type=checkbox],.dr input[type=checkbox]{width:18px;height:18px}.dr{display:grid;grid-template-columns:24px 1fr 30px;gap:8px;margin-bottom:6px;align-items:center}
+.ft{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:12px}td,th{border-bottom:1px solid var(--bd);padding:4px 6px;text-align:left;vertical-align:top}
+.hi{margin-bottom:10px}.hi>b{font-size:12px}.b{color:var(--er)}.a{color:var(--ok)}
+@media(max-width:720px){.k{grid-template-columns:repeat(2,1fr)}.g{grid-template-columns:1fr}.g .f2,.g .f3{grid-column:auto}.sr{grid-template-columns:28px 1fr}}
+</style></head><body><div class="w">
+<div class="top"><h1>📋 변경관리 대시보드</h1><div>
+<button class="p" onclick="openM()">+ 변경건 등록</button>
+<button onclick="expJ()">JSON 백업</button><button onclick="document.getElementById('im').click()">불러오기</button>
+<button onclick="expC()">CSV</button><input type="file" id="im" accept=".json" hidden onchange="impJ(this)"></div></div>
+<div class="k" id="k"></div>
+<div class="tb"><input id="q" placeholder="🔍 관리번호/제목/제품 검색" oninput="render()">
+<select id="so" onchange="render()"><option value="plan">적용예정일 빠른순</option><option value="req">신청일 최신순</option><option value="no">관리번호순</option><option value="pg">진행률 낮은순</option></select></div>
+<div id="L"></div></div>
+<div class="ov" id="ov"><div class="md" id="md"></div></div>
+<script>
+const S=['변경요청서','영향평가서','MDR 체크리스트','변경완료 보고서','변경이관 확인서'];
+const F=[['no','관리번호'],['title','변경사항'],['reqDate','신청일자'],['product','제품명/모델명'],['dept','요청부서/요청자'],['countries','적용국가'],['priority','우선순위'],['reason','변경사유'],['before','변경 전'],['after','변경 후'],['planDate','적용예정일'],['appliedDate','적용일'],['memo','메모']];
+const KEY='ccdash.v1';let D=JSON.parse(localStorage.getItem(KEY)||'[]'),flt='all',dr=null,orig=null,hist=false;
+const $=i=>document.getElementById(i),sv=()=>localStorage.setItem(KEY,JSON.stringify(D));
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const td=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const dd=s=>s?Math.round((new Date(s)-new Date(td()))/864e5):null;
+const blank=()=>({id:Date.now()+'',no:'CC-'+new Date().getFullYear()+'-'+String(D.length+1).padStart(3,'0'),title:'',reqDate:td(),product:'',dept:'',countries:'',priority:'보통',reason:'',before:'',after:'',planDate:'',appliedDate:'',memo:'',na3:false,st:S.map(()=>({done:false,date:'',note:''})),docs:[],hist:[]});
+function sv4(c){const n=c.docs.length,r=n?c.docs.filter(d=>d.done).length/n:0,k=c.st[3].done?1:0;return n?.5*r+.5*k:k}
+function sv_(c,i){if(i==2&&c.na3)return 1;if(i==3)return sv4(c);return c.st[i].done?1:0}
+const pg=c=>Math.round(S.reduce((a,_,i)=>a+sv_(c,i),0)*20);
+const cur=c=>{for(let i=0;i<5;i++)if(!(i==2&&c.na3)&&!c.st[i].done)return i;return 5};
+function stat(c){const p=pg(c);if(p==100)return'완료';const d=dd(c.planDate);if(d!==null&&d<0&&!c.appliedDate)return'지연';return c.st.some(s=>s.done)?'진행중':'접수'}
+function ddHtml(c){if(!c.planDate)return'<span class="dd">적용예정일 미정</span>';const d=dd(c.planDate),done=pg(c)==100;let t='예정 '+c.planDate;if(c.appliedDate)t+=' · 적용 '+c.appliedDate;
+ if(done||c.appliedDate)return`<span class="dd">${t}</span>`;return`<span class="dd ${d<0?'late':d<=7?'soon':''}">${t} (${d<0?'D+'+-d+' 지연':d==0?'D-Day':'D-'+d})</span>`}
+function bar(c){const k=cur(c);return`<div class="stg">${S.map((n,i)=>`<div class="sg ${i==k?'cur':''}"><i><u style="width:${sv_(c,i)*100}%"></u></i><small>${i==2&&c.na3?'MDR(해당없음)':n}</small></div>`).join('')}</div>`}
+function render(){
+ const q=$('q').value.toLowerCase(),t=td();let a=D.map(c=>({c,s:stat(c)}));
+ const cnt=f=>a.filter(f).length,w7=x=>x.s!='완료'&&x.c.planDate&&!x.c.appliedDate&&dd(x.c.planDate)>=0&&dd(x.c.planDate)<=7;
+ const ks=[['all','전체',a.length],['prog','진행중',cnt(x=>x.s=='진행중'||x.s=='접수'||x.s=='지연')],['late','지연',cnt(x=>x.s=='지연')],['soon','7일내 적용예정',cnt(w7)],['done','완료',cnt(x=>x.s=='완료')]];
+ $('k').innerHTML=ks.map(k=>`<div class="kc ${flt==k[0]?'on':''}" onclick="flt='${k[0]}';render()"><b style="${k[0]=='late'&&k[2]?'color:var(--er)':''}">${k[2]}</b><span>${k[1]}</span></div>`).join('');
+ a=a.filter(x=>flt=='all'||(flt=='prog'&&x.s!='완료')||(flt=='late'&&x.s=='지연')||(flt=='soon'&&w7(x))||(flt=='done'&&x.s=='완료'));
+ if(q)a=a.filter(x=>[x.c.no,x.c.title,x.c.product,x.c.dept].join(' ').toLowerCase().includes(q));
+ const so=$('so').value;a.sort((x,y)=>so=='plan'?(x.c.planDate||'9999').localeCompare(y.c.planDate||'9999'):so=='req'?y.c.reqDate.localeCompare(x.c.reqDate):so=='no'?x.c.no.localeCompare(y.c.no):pg(x.c)-pg(y.c));
+ $('L').innerHTML=a.map(({c,s})=>`<div class="it" onclick="openM('${c.id}')"><div class="hd"><div><span class="no">${esc(c.no)}</span><span class="ti">${esc(c.title)}</span><span class="bg st-${s}">${s}</span>${c.priority=='긴급'||c.priority=='높음'?`<span class="bg" style="background:var(--wa)">${c.priority}</span>`:''}</div>${ddHtml(c)}</div>
+ <div class="mt">${esc(c.product)} · ${esc(c.countries)||'적용국가 미입력'} · 신청 ${c.reqDate||'-'}${c.dept?' · '+esc(c.dept):''}</div>
+ <div class="pg">${bar(c)}<div class="pc">${pg(c)}%</div></div>
+ ${cur(c)<5?`<div class="mt" style="margin:8px 0 0">▶ 현재: <b>${S[cur(c)]}</b>${c.st[cur(c)].note?' — '+esc(c.st[cur(c)].note):''}</div>`:''}</div>`).join('')||'<p style="color:var(--mu);text-align:center;padding:40px">등록된 변경건이 없습니다. “+ 변경건 등록”으로 시작하세요.</p>'}
+function flat(c){const o={};F.forEach(([k,l])=>o[l]=c[k]||'');o['MDR 해당없음']=c.na3?'예':'아니오';
+ S.forEach((n,i)=>{o[`[${n}] 완료`]=c.st[i].done?'완료':'미완료';o[`[${n}] 완료일`]=c.st[i].date||'';o[`[${n}] 진행상황`]=c.st[i].note||''});
+ o['검증문서']=c.docs.map(d=>`${d.name}(${d.done?'완료':'미완료'})`).join(', ');return o}
+function openM(id){const c=id?D.find(x=>x.id==id):null;orig=c?JSON.parse(JSON.stringify(c)):null;dr=c?JSON.parse(JSON.stringify(c)):blank();hist=false;drawM();$('ov').classList.add('on')}
+const closeM=()=>$('ov').classList.remove('on');
+function drawM(){const c=dr,inp=(k,l,t='text',cl='')=>`<div class="${cl}"><label>${l}</label><input type="${t}" data-f="${k}" value="${esc(c[k])}"></div>`,ta=(k,l,cl='')=>`<div class="${cl}"><label>${l}</label><textarea data-f="${k}">${esc(c[k])}</textarea></div>`;
+ $('md').innerHTML=`<div class="top"><h1>${orig?esc(orig.no)+' 상세':'변경건 등록'} <span id="pv" style="color:var(--pr)"></span></h1><button onclick="closeM()">✕</button></div>
+ <h3>① 변경요청서 정보</h3><div class="g">${inp('no','변경 관리번호')}${inp('title','변경 사항(제목)','text','f2')}${inp('reqDate','신청일자','date')}${inp('product','해당 제품명 및 모델명','text','f2')}${inp('dept','요청 부서/요청자')}${inp('countries','변경 적용 국가','text','f2')}<div><label>우선순위</label><select data-f="priority">${['낮음','보통','높음','긴급'].map(p=>`<option ${c.priority==p?'selected':''}>${p}</option>`).join('')}</select></div>
+ ${ta('reason','변경 사유','f3')}${ta('before','변경 전 사항','f2')}${ta('after','변경 후 사항')}${inp('planDate','적용예정일','date')}${inp('appliedDate','적용일','date')}${ta('memo','메모 / 이슈 사항','f3')}</div>
+ <h3>진행 단계 (완료 체크 + 진행상황)</h3>${S.map((n,i)=>`<div class="sr"><input type="checkbox" data-s="${i}:done" ${c.st[i].done?'checked':''}><b>${i+1}. ${n}</b><input type="date" data-s="${i}:date" value="${c.st[i].date}"><input data-s="${i}:note" placeholder="현 단계 진행상황 메모" value="${esc(c.st[i].note)}"></div>`).join('')}
+ <label><input type="checkbox" data-f="na3" style="width:auto" ${c.na3?'checked':''}> MDR 체크리스트 해당없음 (EU 미적용 건 → 해당 단계 100% 처리)</label>
+ <h3>④ 변경완료 보고서용 검증문서 <span id="dp" style="color:var(--mu);font-weight:400"></span></h3><div id="dl"></div><button onclick="addD()">+ 검증문서 추가</button>
+ <div class="mt" style="margin-top:6px">검증문서가 있으면 4단계 = 검증문서 완료율 50% + 변경완료 보고서 완료 50%</div>
+ ${orig?`<h3>수정 이력 (${orig.hist.length}건) <button onclick="hist=!hist;drawM()" style="font-size:12px">${hist?'닫기':'보기'}</button></h3>${hist?histH(orig):''}`:''}
+ <div class="ft">${orig?'<button class="d" onclick="delC()">삭제</button>':''}<button onclick="closeM()">취소</button><button class="p" onclick="saveC()">저장</button></div>`;drawD();pv()}
+function histH(c){return c.hist.length?[...c.hist].reverse().map(h=>`<div class="hi"><b>${h.at}</b><table>${h.ch.map(x=>`<tr><td style="width:24%">${esc(x.f)}</td><td class="b">${esc(x.b)||'(빈값)'}</td><td>→</td><td class="a">${esc(x.a)||'(빈값)'}</td></tr>`).join('')}</table></div>`).join(''):'<div class="mt">이력 없음</div>'}
+function drawD(){$('dl').innerHTML=dr.docs.map((d,i)=>`<div class="dr"><input type="checkbox" data-d="${i}:done" ${d.done?'checked':''}><input data-d="${i}:name" placeholder="예: 시험성적서, 유효성확인 보고서" value="${esc(d.name)}"><button onclick="dr.docs.splice(${i},1);drawD();pv()">✕</button></div>`).join('')}
+function addD(){dr.docs.push({name:'',done:false});drawD();pv();const e=document.querySelectorAll('[data-d$=":name"]');e[e.length-1].focus()}
+function pv(){const n=dr.docs.length,d=dr.docs.filter(x=>x.done).length;$('dp').textContent=n?`(${d}/${n} 완료 · ${Math.round(d/n*100)}%)`:'(등록된 문서 없음)';$('pv').textContent='진행률 '+pg(dr)+'%'}
+$('md').addEventListener('input',e=>{const t=e.target,v=t.type=='checkbox'?t.checked:t.value;
+ if(t.dataset.f)dr[t.dataset.f]=v;else if(t.dataset.s){const[i,k]=t.dataset.s.split(':');dr.st[i][k]=v;if(k=='done')dr.st[i].date=v?(dr.st[i].date||td()):'',drawM()}
+ else if(t.dataset.d){const[i,k]=t.dataset.d.split(':');dr.docs[i][k]=v}pv()});
+$('md').addEventListener('change',e=>{if(e.target.dataset.f=='na3')drawM()});
+function saveC(){if(!dr.title.trim()||!dr.no.trim())return alert('관리번호와 변경사항(제목)은 필수입니다.');
+ if(D.some(x=>x.no==dr.no&&x.id!=dr.id))return alert('이미 존재하는 관리번호입니다.');
+ const at=new Date().toLocaleString('ko-KR',{hour12:false});
+ if(!orig){dr.hist=[{at,ch:[{f:'신규 등록',b:'',a:dr.no+' '+dr.title}]}];D.push(dr)}
+ else{const a=flat(orig),b=flat(dr),ch=Object.keys(b).filter(k=>a[k]!==b[k]).map(k=>({f:k,b:a[k],a:b[k]}));
+  if(ch.length)dr.hist.push({at,ch});D[D.findIndex(x=>x.id==dr.id)]=dr}
+ sv();closeM();render()}
+function delC(){if(confirm('이 변경건을 삭제할까요? (복구 불가, 먼저 JSON 백업 권장)')){D=D.filter(x=>x.id!=dr.id);sv();closeM();render()}}
+function dl(n,t,m){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:m}));a.download=n;a.click()}
+const expJ=()=>dl('change-control-'+td()+'.json',JSON.stringify(D,null,1),'application/json');
+function impJ(i){const f=i.files[0];if(!f)return;f.text().then(t=>{try{const x=JSON.parse(t);if(!Array.isArray(x))throw 0;if(confirm('현재 데이터를 불러온 파일로 교체할까요?')){D=x;sv();render()}}catch{alert('올바른 JSON 파일이 아닙니다.')}i.value=''})}
+function expC(){const h=['관리번호','변경사항','제품/모델','신청일','적용예정일','적용일','현재단계','진행률','상태'];
+ const r=D.map(c=>[c.no,c.title,c.product,c.reqDate,c.planDate,c.appliedDate,S[cur(c)]||'완료',pg(c)+'%',stat(c)]);
+ dl('change-control-'+td()+'.csv','\ufeff'+[h,...r].map(x=>x.map(v=>'"'+String(v||'').replace(/"/g,'""')+'"').join(',')).join('\n'),'text/csv')}
+$('ov').addEventListener('mousedown',e=>{if(e.target.id=='ov')closeM()});
+render();
+</script></body></html>
